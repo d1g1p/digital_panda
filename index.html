@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITAL PANDA | Desarrollo Web & Sistemas Digitales</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#060c1a', // Deepest background
+                            900: '#0a142f', // Card / Section background
+                            800: '#132247', // Borders / Hover bg
+                            700: '#1d3263', // Secondary accent border
+                            600: '#1d4ed8', // Medium dark blue
+                            500: '#2563eb', // Core action blue
+                            400: '#3b82f6', // Bright hover blue
+                            300: '#60a5fa', // Soft text highlight
+                            accent: '#38bdf8' // Cyan-blue light accent
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #060c1a;
+            color: #f1f5f9;
+        }
+        .glass-card {
+            background: rgba(10, 20, 47, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.25);
+        }
+        .gradient-blue-text {
+            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-blue-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #0284c7 100%);
+        }
+        .gradient-blue-bg:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #0369a1 100%);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060c1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1d3263;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col selection:bg-navy-500 selection:text-white">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-navy-900 border border-navy-500/40 text-white px-5 py-3.5 rounded-xl shadow-2xl">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-cyan-400 text-xl"></i>
+        <span id="toastMsg" class="font-medium text-sm">Notificación</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-navy-950/90 backdrop-blur-md border-b border-navy-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- DIGITAL PANDA Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-navy-600 to-navy-400 p-0.5 flex items-center justify-center shadow-lg shadow-navy-600/30 group-hover:scale-105 transition-transform">
+                    <div class="w-full h-full bg-navy-950 rounded-[10px] flex items-center justify-center">
+                        <!-- Custom Cyber Panda SVG Logo -->
+                        <svg class="w-7 h-7 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+                            <!-- Ears -->
+                            <circle cx="6" cy="6" r="3" fill="#2563eb"/>
+                            <circle cx="18" cy="6" r="3" fill="#2563eb"/>
+                            <!-- Head Base -->
+                            <path d="M12 4C7.5 4 4 7.5 4 12C4 16.5 7.5 20 12 20C16.5 20 20 16.5 20 12C20 7.5 16.5 4 12 4Z" fill="#f8fafc"/>
+                            <!-- Eye Patches -->
+                            <ellipse cx="8.5" cy="11.5" rx="2.2" ry="2.8" fill="#0a142f" transform="rotate(-15 8.5 11.5)"/>
+                            <ellipse cx="15.5" cy="11.5" rx="2.2" ry="2.8" fill="#0a142f" transform="rotate(15 15.5 11.5)"/>
+                            <!-- Glowing Eyes -->
+                            <circle cx="8.8" cy="11.2" r="0.9" fill="#38bdf8"/>
+                            <circle cx="15.2" cy="11.2" r="0.9" fill="#38bdf8"/>
+                            <!-- Nose & Mouth -->
+                            <ellipse cx="12" cy="14" rx="1.2" ry="0.8" fill="#0a142f"/>
+                            <path d="M11 15.5C11.5 16 12.5 16 13 15.5" stroke="#0a142f" stroke-width="1" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-black text-xl tracking-wider text-white flex items-center gap-1.5 leading-none">
+                        DIGITAL<span class="text-navy-accent">PANDA</span>
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase mt-1">Web & Software Agency</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Menu -->
+            <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-300">
+                <a href="#inicio" class="hover:text-navy-accent transition-colors">Inicio</a>
+                <a href="#por-que-web" class="hover:text-navy-accent transition-colors">¿Por qué Web?</a>
+                <a href="#portafolio" class="hover:text-navy-accent transition-colors">Portafolio</a>
+                <a href="#cotizador" class="hover:text-navy-accent transition-colors">Cotizador</a>
+                <a href="#rastreador" class="hover:text-navy-accent transition-colors flex items-center gap-1.5 text-navy-accent font-semibold">
+                    <i class="fa-solid fa-radar text-xs animate-pulse"></i> Mi Proyecto
+                </a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-3">
+                <button onclick="promptAdminPin()" class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 border border-navy-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-user-shield text-navy-accent"></i>
+                    <span>Panel CRM</span>
+                </button>
+                <a href="#cotizador" class="hidden sm:inline-flex px-4 py-2.5 rounded-xl gradient-blue-bg text-white text-xs font-bold shadow-lg shadow-navy-600/30 transition-all">
+                    Cotizar Proyecto
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section id="inicio" class="relative pt-12 pb-20 md:pt-24 md:pb-32 overflow-hidden border-b border-navy-800/60">
+            <!-- Background Radial Lighting (Navy Blue tone) -->
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[380px] bg-navy-600/20 rounded-full blur-[130px] pointer-events-none"></div>
+            <div class="absolute top-1/3 right-10 w-[300px] h-[300px] bg-sky-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center max-w-3xl mx-auto">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-navy-900 border border-navy-500/30 text-navy-accent text-xs font-semibold mb-6 shadow-inner">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                        DIGITAL PANDA | Transformación Digital Integrada
+                    </div>
+                    
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white mb-6">
+                        Impulsa tu Marca con Web & Sistemas que <span class="gradient-blue-text">Generan Resultados</span>.
+                    </h1>
+                    
+                    <p class="text-lg text-slate-300 leading-relaxed mb-8 font-normal">
+                        En <strong class="text-white">DIGITAL PANDA</strong> creamos páginas web de alta conversión y sistemas web automatizados a medida. Diseñamos plataformas rápidas, seguras y preparadas para escalar tu negocio al siguiente nivel.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a href="#cotizador" class="w-full sm:w-auto px-8 py-4 rounded-xl gradient-blue-bg text-white font-bold text-base shadow-xl shadow-navy-600/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-calculator"></i>
+                            Calcular Cotización Online
+                        </a>
+                        <a href="#rastreador" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-navy-900 hover:bg-navy-800 border border-navy-700 text-slate-200 font-semibold text-base transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass-location text-navy-accent"></i>
+                            Seguir Avance de Mi Pedido
+                        </a>
+                    </div>
+
+                    <!-- Client / Partner Logo Placeholders Grid -->
+                    <div class="mt-16 pt-10 border-t border-navy-800/80">
+                        <p class="text-xs uppercase tracking-widest text-slate-400 mb-6 font-semibold">Tecnologías & Marcas Asociadas [ Espacios para Logos ]</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 opacity-70 grayscale hover:grayscale-0 transition-all">
+                            <div class="p-3 rounded-xl bg-navy-900/60 border border-navy-800 flex items-center justify-center text-xs font-mono text-slate-400 gap-2">
+                                <i class="fa-brands fa-react text-cyan-400 text-base"></i> React JS
+                            </div>
+                            <div class="p-3 rounded-xl bg-navy-900/60 border border-navy-800 flex items-center justify-center text-xs font-mono text-slate-400 gap-2">
+                                <i class="fa-brands fa-node-js text-emerald-400 text-base"></i> Node.js
+                            </div>
+                            <div class="p-3 rounded-xl bg-navy-900/60 border border-navy-800 flex items-center justify-center text-xs font-mono text-slate-400 gap-2">
+                                <i class="fa-brands fa-python text-amber-400 text-base"></i> Python POS
+                            </div>
+                            <div class="p-3 rounded-xl bg-navy-900/60 border border-navy-800 flex items-center justify-center text-xs font-mono text-slate-400 gap-2">
+                                <i class="fa-brands fa-aws text-orange-400 text-base"></i> AWS Cloud
+                            </div>
+                            <div class="p-3 rounded-xl bg-navy-900/60 border border-navy-800 flex items-center justify-center text-xs font-mono text-slate-400 gap-2">
+                                <i class="fa-solid fa-database text-blue-400 text-base"></i> PostgreSQL
+                            </div>
+                            <div class="p-3 rounded-xl bg-navy-900/60 border border-navy-800 flex items-center justify-center text-xs font-mono text-slate-400 gap-2">
+                                <i class="fa-brands fa-wordpress text-sky-400 text-base"></i> CMS Web
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Persuasive Value Section -->
+        <section id="por-que-web" class="py-20 bg-navy-900/40 border-b border-navy-800/60">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <span class="text-xs font-bold text-navy-accent tracking-widest uppercase">Ventajas Competitivas</span>
+                    <h2 class="text-3xl font-bold text-white mt-2">¿Por qué Digitalizar tu Negocio con DIGITAL PANDA?</h2>
+                    <p class="text-slate-400 text-sm mt-2">No se trata solo de estar en la red, sino de contar con herramientas digitales estratégicas que trabajen para ti las 24 horas.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="glass-card p-8 rounded-2xl glass-card-hover transition-all group">
+                        <div class="w-14 h-14 rounded-xl bg-navy-600/20 border border-navy-500/30 text-navy-accent flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Diseño Centrado en Conversiones</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Estructuramos tu landing page o sitio web enfocado en guiara los visitantes a tomar acción: comprar, solicitar presupuesto o contactarte directamente por WhatsApp.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="glass-card p-8 rounded-2xl glass-card-hover transition-all group">
+                        <div class="w-14 h-14 rounded-xl bg-navy-600/20 border border-navy-500/30 text-navy-accent flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-laptop-code"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Sistemas Web Integrados</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Desarrollamos paneles de administración, sistemas de cobro, gestión de inventario, punto de venta (POS) y control de clientes optimizados para tu flujo de trabajo.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="glass-card p-8 rounded-2xl glass-card-hover transition-all group">
+                        <div class="w-14 h-14 rounded-xl bg-navy-600/20 border border-navy-500/30 text-navy-accent flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Transparencia Total & Seguimiento</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            A través de nuestro exclusivo sistema de **Código de Cliente**, podrás consultar en tiempo real el progreso de tu web, garantizando fechas de entrega exactas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Showcase Section -->
+        <section id="portafolio" class="py-20 border-b border-navy-800/60">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                    <div>
+                        <span class="text-xs font-bold text-navy-accent tracking-widest uppercase">Portafolio Destacado</span>
+                        <h2 class="text-3xl font-bold text-white mt-2">Muestras de Trabajos & Sistemas</h2>
+                    </div>
+                    <p class="text-slate-400 max-w-md mt-2 md:mt-0 text-sm">
+                        Proyectos reales y prototipos interactivos desarrollados bajo la arquitectura sólida de DIGITAL PANDA.
+                    </p>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Portfolio Item 1 -->
+                    <div class="glass-card rounded-2xl overflow-hidden glass-card-hover transition-all flex flex-col group">
+                        <div class="h-48 bg-navy-950 relative overflow-hidden flex items-center justify-center border-b border-navy-800">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-navy-950 via-navy-900 to-navy-800 flex flex-col items-center justify-center p-4">
+                                <i class="fa-solid fa-cart-shopping text-5xl text-navy-400/80 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-xs text-slate-300 font-mono">[ Preview Tienda E-Commerce ]</span>
+                            </div>
+                            <span class="absolute top-3 right-3 bg-navy-600/40 text-cyan-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-navy-500/40">
+                                E-Commerce
+                            </span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-2">E-Commerce & Pedidos Automáticos</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed mb-4">
+                                    Catálogo digital intuitivo con carrito de compras, cálculo de envíos y notificaciones de pedidos directo al WhatsApp del negocio.
+                                </p>
+                            </div>
+                            <div class="pt-4 border-t border-navy-800 flex items-center justify-between">
+                                <span class="text-xs font-mono text-slate-400">Node + Tailwind</span>
+                                <button onclick="demoShowcase('Tienda E-Commerce')" class="text-xs font-bold text-navy-accent hover:underline flex items-center gap-1">
+                                    Ver Prototipo <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Item 2 -->
+                    <div class="glass-card rounded-2xl overflow-hidden glass-card-hover transition-all flex flex-col group">
+                        <div class="h-48 bg-navy-950 relative overflow-hidden flex items-center justify-center border-b border-navy-800">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-navy-950 via-navy-900 to-navy-800 flex flex-col items-center justify-center p-4">
+                                <i class="fa-solid fa-cash-register text-5xl text-blue-400/80 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-xs text-slate-300 font-mono">[ Preview Sistema POS Cloud ]</span>
+                            </div>
+                            <span class="absolute top-3 right-3 bg-blue-600/40 text-blue-200 text-xs px-2.5 py-1 rounded-full font-semibold border border-blue-500/40">
+                                Sistema Web
+                            </span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-2">Sistema Web POS & Control de Cajas</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed mb-4">
+                                    Plataforma administrativa para gestión de inventarios multi-sucursal, facturación rápida y reportes estadísticos diarios.
+                                </p>
+                            </div>
+                            <div class="pt-4 border-t border-navy-800 flex items-center justify-between">
+                                <span class="text-xs font-mono text-slate-400">Python + MySQL</span>
+                                <button onclick="demoShowcase('Sistema POS Cloud')" class="text-xs font-bold text-navy-accent hover:underline flex items-center gap-1">
+                                    Ver Prototipo <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Item 3 -->
+                    <div class="glass-card rounded-2xl overflow-hidden glass-card-hover transition-all flex flex-col group">
+                        <div class="h-48 bg-navy-950 relative overflow-hidden flex items-center justify-center border-b border-navy-800">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-navy-950 via-navy-900 to-navy-800 flex flex-col items-center justify-center p-4">
+                                <i class="fa-solid fa-building-columns text-5xl text-sky-400/80 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-xs text-slate-300 font-mono">[ Preview Portal Corporativo ]</span>
+                            </div>
+                            <span class="absolute top-3 right-3 bg-sky-600/40 text-sky-200 text-xs px-2.5 py-1 rounded-full font-semibold border border-sky-500/40">
+                                Web Corporativa
+                            </span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-2">Portal Web Corporativo Institucional</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed mb-4">
+                                    Diseño corporativo elegante para empresas de servicios, con formulario de cotizaciones, mapa dinámico y blog de noticias SEO.
+                                </p>
+                            </div>
+                            <div class="pt-4 border-t border-navy-800 flex items-center justify-between">
+                                <span class="text-xs font-mono text-slate-400">React + Next.js</span>
+                                <button onclick="demoShowcase('Portal Corporativo')" class="text-xs font-bold text-navy-accent hover:underline flex items-center gap-1">
+                                    Ver Prototipo <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Quote Calculator (Blue Palette & WhatsApp Integration) -->
+        <section id="cotizador" class="py-20 bg-navy-900/30 border-b border-navy-800/60">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-12">
+                    <span class="text-xs font-bold text-navy-accent tracking-widest uppercase">Cotizador Digital en Vivo</span>
+                    <h2 class="text-3xl font-bold text-white mt-2">Calcula la Inversión para tu Proyecto</h2>
+                    <p class="text-slate-400 text-sm mt-2">Selecciona la solución que necesitas. Al finalizar, podrás enviar el presupuesto directamente a nuestro WhatsApp oficial.</p>
+                </div>
+
+                <div class="max-w-4xl mx-auto glass-card rounded-2xl p-6 sm:p-10 shadow-2xl">
+                    <form id="quoteForm" onsubmit="sendWhatsAppQuote(event)">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <!-- Options Column -->
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-200 mb-2">1. Selecciona el Tipo de Proyecto</label>
+                                    <select id="projectType" onchange="calculateQuote()" class="w-full bg-navy-950 border border-navy-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-navy-500">
+                                        <option value="150" data-name="Landing Page de Alta Conversión">Landing Page de Alta Conversión ($150)</option>
+                                        <option value="300" data-name="Sitio Web Corporativo">Sitio Web Corporativo Completo ($300)</option>
+                                        <option value="450" data-name="Tienda Virtual / E-Commerce">Tienda Virtual / E-Commerce ($450)</option>
+                                        <option value="600" data-name="Sistema Web a Medida (POS/CRM/ERP)">Sistema Web a Medida (POS/CRM/ERP) ($600+)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-200 mb-3">2. Módulos y Complementos</label>
+                                    <div class="space-y-3">
+                                        <label class="flex items-center gap-3 p-3 rounded-xl bg-navy-950/80 border border-navy-800 cursor-pointer hover:border-navy-700">
+                                            <input type="checkbox" value="50" data-name="Panel de Administración Autogestionable" onchange="calculateQuote()" class="w-4 h-4 rounded text-navy-600 accent-navy-500">
+                                            <span class="text-sm text-slate-300">Panel de Control / Administrador (+$50)</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-3 rounded-xl bg-navy-950/80 border border-navy-800 cursor-pointer hover:border-navy-700">
+                                            <input type="checkbox" value="40" data-name="Botón e Integración WhatsApp Directa" onchange="calculateQuote()" class="w-4 h-4 rounded text-navy-600 accent-navy-500" checked>
+                                            <span class="text-sm text-slate-300">Integración Botón WhatsApp Directo (+$40)</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-3 rounded-xl bg-navy-950/80 border border-navy-800 cursor-pointer hover:border-navy-700">
+                                            <input type="checkbox" value="60" data-name="Dominio .com + Hosting SSL por 1 Año" onchange="calculateQuote()" class="w-4 h-4 rounded text-navy-600 accent-navy-500" checked>
+                                            <span class="text-sm text-slate-300">Dominio .com + Hosting SSL (1 Año) (+$60)</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-3 rounded-xl bg-navy-950/80 border border-navy-800 cursor-pointer hover:border-navy-700">
+                                            <input type="checkbox" value="80" data-name="Optimización SEO y Velocidad Google" onchange="calculateQuote()" class="w-4 h-4 rounded text-navy-600 accent-navy-500">
+                                            <span class="text-sm text-slate-300">Optimización SEO Google + Velocidad (+$80)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Customer Info & Total Box -->
+                            <div class="flex flex-col justify-between space-y-6">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre o Empresa *</label>
+                                        <input type="text" id="quoteClientName" placeholder="Ej. Pedro Morales - Panda Tech" required class="w-full bg-navy-950 border border-navy-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-navy-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Teléfono / WhatsApp *</label>
+                                        <input type="tel" id="quoteClientPhone" placeholder="Ej. +591 70000000" required class="w-full bg-navy-950 border border-navy-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-navy-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Detalles del Proyecto (Opcional)</label>
+                                        <textarea id="quoteClientNotes" rows="2" placeholder="Describenos brevemente tu idea..." class="w-full bg-navy-950 border border-navy-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-navy-500"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Total Pricing Box -->
+                                <div class="bg-navy-950 p-5 rounded-xl border border-navy-500/30">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-xs text-slate-400 font-medium">Inversión Estimada:</span>
+                                        <span class="text-xs text-cyan-400 font-semibold"><i class="fa-solid fa-circle-check"></i> DIGITAL PANDA Guarantee</span>
+                                    </div>
+                                    <div class="text-3xl font-black text-white flex items-baseline gap-1">
+                                        $<span id="quoteTotalAmount">250</span>
+                                        <span class="text-xs text-slate-400 font-normal">USD</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 mt-1">*Presupuesto sujeto a especificaciones requeridas.</p>
+                                </div>
+
+                                <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                                    Enviar Cotización por WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Project Tracker Section -->
+        <section id="rastreador" class="py-20 border-b border-navy-800/60 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-12">
+                    <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Seguimiento Transparente</span>
+                    <h2 class="text-3xl font-bold text-white mt-2">Rastreador de Proyecto en Tiempo Real</h2>
+                    <p class="text-slate-400 text-sm mt-2">Consulta el estado actual de tu desarrollo utilizando tu Código de Cliente asignado por DIGITAL PANDA.</p>
+                </div>
+
+                <!-- Search Input Box -->
+                <div class="max-w-md mx-auto mb-12">
+                    <div class="flex gap-2 bg-navy-900 p-2 rounded-2xl border border-navy-700 shadow-xl focus-within:border-navy-500">
+                        <input type="text" id="trackerInputCode" placeholder="Ej: CLI-8942" class="bg-transparent flex-grow px-4 py-2 text-white text-sm font-mono tracking-wider focus:outline-none uppercase">
+                        <button onclick="searchClientProgress()" class="px-5 py-2.5 rounded-xl gradient-blue-bg text-white font-bold text-sm transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Buscar
+                        </button>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="text-[11px] text-slate-400">Probar código demo: <button onclick="demoFillTracker('CLI-8942')" class="text-navy-accent underline font-mono">CLI-8942</button> o <button onclick="demoFillTracker('CLI-3105')" class="text-navy-accent underline font-mono">CLI-3105</button></span>
+                    </div>
+                </div>
+
+                <!-- Tracker Visual Interface -->
+                <div id="trackerDisplayArea" class="max-w-3xl mx-auto glass-card rounded-2xl p-6 sm:p-8 border border-navy-700">
+                    <!-- Client Header Info -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-navy-800 gap-4">
+                        <div>
+                            <span id="displayClientCode" class="font-mono text-xs px-2.5 py-1 rounded bg-navy-600/30 text-navy-accent font-bold border border-navy-500/40">CLI-8942</span>
+                            <h3 id="displayClientName" class="text-xl font-bold text-white mt-2">Cliente Demo - Clínica Dental</h3>
+                            <p id="displaySiteName" class="text-xs text-slate-400">Proyecto: <span class="text-slate-200">www.dentaldemo.com</span></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block">Progreso General</span>
+                            <span id="displayProgressPercent" class="text-3xl font-black text-cyan-400">50%</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="my-8">
+                        <div class="w-full bg-navy-950 rounded-full h-3.5 p-0.5 border border-navy-800 overflow-hidden">
+                            <div id="displayProgressBar" class="gradient-blue-bg h-full rounded-full transition-all duration-700" style="width: 50%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Project Milestones Timeline -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2">
+                        <!-- Step 1 -->
+                        <div id="step1" class="p-3 rounded-xl bg-navy-950/80 border border-emerald-500/40 text-center">
+                            <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center mx-auto mb-2">1</div>
+                            <p class="text-xs font-semibold text-white">Requerimientos</p>
+                            <span class="text-[10px] text-emerald-400 font-medium block mt-1"><i class="fa-solid fa-check"></i> Listo</span>
+                        </div>
+                        <!-- Step 2 -->
+                        <div id="step2" class="p-3 rounded-xl bg-navy-950/80 border border-navy-500/40 text-center">
+                            <div class="w-7 h-7 rounded-full bg-navy-600/30 text-navy-accent font-bold text-xs flex items-center justify-center mx-auto mb-2">2</div>
+                            <p class="text-xs font-semibold text-white">Diseño UI/UX</p>
+                            <span class="text-[10px] text-navy-accent font-medium block mt-1"><i class="fa-solid fa-spinner animate-spin"></i> En Proceso</span>
+                        </div>
+                        <!-- Step 3 -->
+                        <div id="step3" class="p-3 rounded-xl bg-navy-950/40 border border-navy-800 text-center opacity-60">
+                            <div class="w-7 h-7 rounded-full bg-navy-900 text-slate-500 font-bold text-xs flex items-center justify-center mx-auto mb-2">3</div>
+                            <p class="text-xs font-semibold text-slate-300">Desarrollo Web</p>
+                            <span class="text-[10px] text-slate-500 block mt-1">Pendiente</span>
+                        </div>
+                        <!-- Step 4 -->
+                        <div id="step4" class="p-3 rounded-xl bg-navy-950/40 border border-navy-800 text-center opacity-60">
+                            <div class="w-7 h-7 rounded-full bg-navy-900 text-slate-500 font-bold text-xs flex items-center justify-center mx-auto mb-2">4</div>
+                            <p class="text-xs font-semibold text-slate-300">Despliegue</p>
+                            <span class="text-[10px] text-slate-500 block mt-1">Pendiente</span>
+                        </div>
+                    </div>
+
+                    <!-- Client Links & Actions -->
+                    <div class="mt-8 pt-6 border-t border-navy-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+                        <div>
+                            <span class="text-slate-400">Enlace de Pruebas / Web en Vivo:</span>
+                            <a id="displaySiteLink" href="#" target="_blank" class="text-navy-accent hover:underline block font-mono mt-0.5">https://demo-dental.digitalpanda.com</a>
+                        </div>
+                        <a href="https://wa.me/?text=Hola%20DIGITAL%20PANDA,%20tengo%20una%20consulta%20sobre%20mi%20proyecto" target="_blank" class="px-4 py-2 rounded-lg bg-navy-800 hover:bg-navy-700 text-slate-200 font-semibold text-xs flex items-center gap-2 border border-navy-700">
+                            <i class="fa-brands fa-whatsapp text-emerald-400"></i> Contactar al Panda Team
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-navy-950 border-t border-navy-800 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-navy-600 flex items-center justify-center text-white text-xs font-bold">
+                    <i class="fa-solid fa-shield-cat"></i>
+                </div>
+                <span class="text-sm font-bold text-white tracking-wider">DIGITAL PANDA <span class="text-xs font-normal text-slate-400">[ Tu Logo Aquí ]</span></span>
+            </div>
+            <p class="text-xs text-slate-400">
+                &copy; 2026 DIGITAL PANDA Studio. Todos los derechos reservados. Agencia de Desarrollo Web y Sistemas.
+            </p>
+            <div class="flex gap-4 text-slate-400 text-sm">
+                <a href="#" class="hover:text-navy-accent transition-colors"><i class="fa-brands fa-facebook"></i></a>
+                <a href="#" class="hover:text-navy-accent transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="hover:text-navy-accent transition-colors"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERNAL ADMIN CRM DASHBOARD MODAL -->
+    <div id="adminModal" class="fixed inset-0 z-50 bg-navy-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6">
+        <div class="bg-navy-900 border border-navy-700 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-navy-800 flex justify-between items-center bg-navy-950">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-navy-600/30 text-navy-accent flex items-center justify-center font-bold border border-navy-500/30">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">DIGITAL PANDA - CRM Admin</h2>
+                        <p class="text-xs text-slate-400">Administra tus clientes, genera sus códigos únicos y actualiza su progreso.</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-navy-800">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Scrollable -->
+            <div class="p-6 overflow-y-auto space-y-8 flex-grow">
+                <!-- Registration Form for New Clients -->
+                <div class="bg-navy-950/70 p-5 rounded-xl border border-navy-800">
+                    <h3 class="text-sm font-bold text-navy-accent mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Cliente (Genera Código Aleatorio)
+                    </h3>
+                    <form id="newClientForm" onsubmit="handleRegisterClient(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Cliente *</label>
+                            <input type="text" id="adminClientName" placeholder="Ej. Carlos Mendoza" required class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-navy-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Proyecto / Empresa *</label>
+                            <input type="text" id="adminSiteName" placeholder="Ej. Farmacia La Salud" required class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-navy-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Enlace / Dominio Asignado</label>
+                            <input type="url" id="adminSiteLink" placeholder="https://farmacialasalud.com" class="w-full bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-navy-500">
+                        </div>
+                        <div class="sm:col-span-3 flex justify-end pt-2">
+                            <button type="submit" class="px-5 py-2.5 rounded-lg gradient-blue-bg text-white font-bold text-xs shadow-md transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-plus"></i> Generar Código y Guardar Cliente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Client List Table -->
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-navy-accent"></i> Clientes Activos en Sistema
+                        </h3>
+                        <span id="clientCountBadge" class="text-xs bg-navy-950 text-slate-300 px-3 py-1 rounded-full border border-navy-700 font-mono">0 Clientes</span>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-navy-800">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-navy-950 text-slate-400 font-semibold border-b border-navy-800 uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-3">Código</th>
+                                    <th class="p-3">Cliente / Proyecto</th>
+                                    <th class="p-3">Progreso (%)</th>
+                                    <th class="p-3">Dominio / Link</th>
+                                    <th class="p-3 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminClientsTableBody" class="divide-y divide-navy-800/60 bg-navy-900/40">
+                                <!-- Dynamic rows via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-navy-800 bg-navy-950 flex justify-between items-center text-xs text-slate-400">
+                <span>Base de Datos Local (localStorage)</span>
+                <button onclick="closeAdminModal()" class="px-4 py-2 bg-navy-800 hover:bg-navy-700 text-slate-200 rounded-lg font-semibold border border-navy-700">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initial Dataset
+        const DEFAULT_CLIENTS = [
+            {
+                code: 'CLI-8942',
+                name: 'María Gutiérrez - Clínica Dental',
+                siteName: 'Clínica Dental Sonrisas',
+                siteLink: 'https://demo-dental.digitalpanda.com',
+                progress: 50
+            },
+            {
+                code: 'CLI-3105',
+                name: 'Roberto Gomez - Importadora',
+                siteName: 'Importaciones Gomez POS',
+                siteLink: 'https://gomez-pos.digitalpanda.com',
+                progress: 100
+            }
+        ];
+
+        let clientsData = [];
+        const ADMIN_PIN = "1234"; // Default Security PIN for Admin Panel
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadClientsFromStorage();
+            calculateQuote();
+            // Automatically fill initial tracker with sample code
+            demoFillTracker('CLI-8942');
+        });
+
+        // Toast Helper
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            if(isSuccess) {
+                toastIcon.className = "fa-solid fa-circle-check text-cyan-400 text-xl";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-xl";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        // LocalStorage Logic
+        function loadClientsFromStorage() {
+            const stored = localStorage.getItem('digitalpanda_clients');
+            if (stored) {
+                try {
+                    clientsData = JSON.parse(stored);
+                } catch(e) {
+                    clientsData = [...DEFAULT_CLIENTS];
+                }
+            } else {
+                clientsData = [...DEFAULT_CLIENTS];
+                saveClientsToStorage();
+            }
+            renderAdminTable();
+        }
+
+        function saveClientsToStorage() {
+            localStorage.setItem('digitalpanda_clients', JSON.stringify(clientsData));
+            renderAdminTable();
+        }
+
+        // Generate Random Code (e.g. CLI-4921)
+        function generateRandomCode() {
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            return `CLI-${randomNum}`;
+        }
+
+        // Quote Calculator Logic
+        function calculateQuote() {
+            const typeSelect = document.getElementById('projectType');
+            let total = parseInt(typeSelect.value) || 0;
+
+            const checkboxes = document.querySelectorAll('#quoteForm input[type="checkbox"]:checked');
+            checkboxes.forEach(cb => {
+                total += parseInt(cb.value) || 0;
+            });
+
+            document.getElementById('quoteTotalAmount').innerText = total;
+        }
+
+        // Send Quote to WhatsApp
+        function sendWhatsAppQuote(e) {
+            e.preventDefault();
+            const clientName = document.getElementById('quoteClientName').value;
+            const clientPhone = document.getElementById('quoteClientPhone').value;
+            const clientNotes = document.getElementById('quoteClientNotes').value;
+            
+            const typeSelect = document.getElementById('projectType');
+            const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+            const projectTypeName = selectedOption.getAttribute('data-name');
+            const totalAmount = document.getElementById('quoteTotalAmount').innerText;
+
+            let modules = [];
+            const checkboxes = document.querySelectorAll('#quoteForm input[type="checkbox"]:checked');
+            checkboxes.forEach(cb => {
+                modules.push(`- ${cb.getAttribute('data-name')}`);
+            });
+
+            let message = `🐼 *NUEVA COTIZACIÓN - DIGITAL PANDA*\n\n`;
+            message += `👤 *Cliente:* ${clientName}\n`;
+            message += `📞 *Teléfono:* ${clientPhone}\n`;
+            message += `💻 *Proyecto:* ${projectTypeName}\n\n`;
+            
+            if (modules.length > 0) {
+                message += `📦 *Módulos Elegidos:*\n${modules.join('\n')}\n\n`;
+            }
+
+            if (clientNotes.trim() !== '') {
+                message += `📝 *Detalles:* ${clientNotes}\n\n`;
+            }
+
+            message += `💰 *Presupuesto Estimado:* $${totalAmount} USD\n\n`;
+            message += `Hola DIGITAL PANDA, quisiera confirmar la disponibilidad para iniciar este proyecto.`;
+
+            // Replace with your WhatsApp Phone Number
+            const targetPhone = "59170000000"; 
+            const whatsappUrl = `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
+            showToast('Cotización lista. Redirigiendo a WhatsApp...');
+        }
+
+        // Search Tracker Logic
+        function searchClientProgress() {
+            const inputCode = document.getElementById('trackerInputCode').value.trim().toUpperCase();
+            
+            if(!inputCode) {
+                showToast('Ingresa un código de cliente válido', false);
+                return;
+            }
+
+            const client = clientsData.find(c => c.code === inputCode);
+
+            if (client) {
+                document.getElementById('displayClientCode').innerText = client.code;
+                document.getElementById('displayClientName').innerText = client.name;
+                document.getElementById('displaySiteName').innerText = `Proyecto: ${client.siteName}`;
+                document.getElementById('displayProgressPercent').innerText = `${client.progress}%`;
+                document.getElementById('displayProgressBar').style.width = `${client.progress}%`;
+
+                const linkElem = document.getElementById('displaySiteLink');
+                if (client.siteLink && client.siteLink !== '#') {
+                    linkElem.href = client.siteLink;
+                    linkElem.innerText = client.siteLink;
+                } else {
+                    linkElem.href = '#';
+                    linkElem.innerText = 'Enlace aún no asignado';
+                }
+
+                updateMilestoneUI(client.progress);
+                showToast(`Proyecto ${client.code} cargado`);
+            } else {
+                showToast('Código de cliente no encontrado', false);
+            }
+        }
+
+        function demoFillTracker(code) {
+            document.getElementById('trackerInputCode').value = code;
+            searchClientProgress();
+        }
+
+        function updateMilestoneUI(progress) {
+            const s1 = document.getElementById('step1');
+            const s2 = document.getElementById('step2');
+            const s3 = document.getElementById('step3');
+            const s4 = document.getElementById('step4');
+
+            [s1, s2, s3, s4].forEach((el) => {
+                el.className = "p-3 rounded-xl bg-navy-950/40 border border-navy-800 text-center opacity-60";
+            });
+
+            if (progress >= 25) {
+                s1.className = "p-3 rounded-xl bg-navy-950/80 border border-emerald-500/40 text-center opacity-100";
+            }
+            if (progress >= 50) {
+                s2.className = "p-3 rounded-xl bg-navy-950/80 border border-navy-500/40 text-center opacity-100";
+            }
+            if (progress >= 75) {
+                s3.className = "p-3 rounded-xl bg-navy-950/80 border border-cyan-500/40 text-center opacity-100";
+            }
+            if (progress >= 100) {
+                s4.className = "p-3 rounded-xl bg-navy-950/80 border border-emerald-500/60 text-center opacity-100 shadow-lg shadow-emerald-500/10";
+            }
+        }
+
+        // Admin Security PIN
+        function promptAdminPin() {
+            const enteredPin = prompt("Ingrese el PIN de Administrador (PIN Por Defecto: 1234):");
+            if (enteredPin === ADMIN_PIN) {
+                openAdminModal();
+            } else if (enteredPin !== null) {
+                showToast("PIN Incorrecto. Acceso denegado.", false);
+            }
+        }
+
+        // Admin CRM Control
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+            renderAdminTable();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        // Register Client Form Handler
+        function handleRegisterClient(e) {
+            e.preventDefault();
+            const name = document.getElementById('adminClientName').value.trim();
+            const siteName = document.getElementById('adminSiteName').value.trim();
+            const siteLink = document.getElementById('adminSiteLink').value.trim();
+
+            const newCode = generateRandomCode();
+
+            const newClient = {
+                code: newCode,
+                name: name,
+                siteName: siteName,
+                siteLink: siteLink || '#',
+                progress: 10
+            };
+
+            clientsData.unshift(newClient);
+            saveClientsToStorage();
+
+            document.getElementById('newClientForm').reset();
+            showToast(`Cliente registrado con Código: ${newCode}`);
+        }
+
+        // Render CRM Table
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminClientsTableBody');
+            const badge = document.getElementById('clientCountBadge');
+            
+            badge.innerText = `${clientsData.length} Cliente(s)`;
+            tbody.innerHTML = '';
+
+            if (clientsData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-6 text-center text-slate-500">No hay clientes en el sistema.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            clientsData.forEach((client, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-navy-800/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-navy-accent">
+                        <div class="flex items-center gap-1.5">
+                            <span>${client.code}</span>
+                            <button onclick="copyToClipboard('${client.code}')" title="Copiar Código" class="text-slate-500 hover:text-slate-300">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-semibold text-white">${client.name}</div>
+                        <div class="text-[11px] text-slate-400">${client.siteName}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <input type="number" min="0" max="100" value="${client.progress}" onchange="updateClientProgress(${index}, this.value)" class="w-16 bg-navy-950 border border-navy-700 rounded px-2 py-1 text-white text-xs font-bold text-center">
+                            <span class="text-slate-400">%</span>
+                        </div>
+                    </td>
+                    <td class="p-3 font-mono text-[11px]">
+                        <input type="text" value="${client.siteLink || ''}" onchange="updateClientLink(${index}, this.value)" placeholder="https://..." class="bg-navy-950 border border-navy-800 rounded px-2 py-1 text-slate-300 w-36 truncate focus:outline-none focus:border-navy-600">
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteClient(${index})" class="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateClientProgress(index, newProgress) {
+            let val = parseInt(newProgress);
+            if (isNaN(val)) val = 0;
+            if (val > 100) val = 100;
+            if (val < 0) val = 0;
+
+            clientsData[index].progress = val;
+            saveClientsToStorage();
+            showToast(`Progreso de ${clientsData[index].code} a ${val}%`);
+        }
+
+        function updateClientLink(index, newLink) {
+            clientsData[index].siteLink = newLink.trim();
+            saveClientsToStorage();
+            showToast('Dominio / Enlace actualizado');
+        }
+
+        function deleteClient(index) {
+            if (confirm(`¿Eliminar al cliente ${clientsData[index].code}?`)) {
+                const deleted = clientsData.splice(index, 1);
+                saveClientsToStorage();
+                showToast(`Cliente ${deleted[0].code} eliminado`);
+            }
+        }
+
+        function copyToClipboard(text) {
+            const tempInput = document.createElement("input");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            showToast(`Código ${text} copiado al portapapeles`);
+        }
+
+        function demoShowcase(serviceName) {
+            showToast(`Cargando vista previa de ${serviceName}`);
+        }
+    </script>
+</body>
+</html>
