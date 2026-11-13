@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+    <title>Gestión de clientes | Muestra de DIGITAL PANDA</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../ui.css">
+    <style>body{--lift-shadow:0 18px 36px -24px rgba(124,58,237,.2);background:#f5f6fa;color:#202338}</style>
+</head>
+<body>
+    <div class="bg-violet-950 text-violet-100 text-center text-xs py-2">MUESTRA DE DISEÑO · Clientes y datos ficticios · No se guarda información</div>
+    <header class="bg-white border-b"><div class="max-w-6xl mx-auto px-5 py-4 flex flex-wrap justify-between items-center gap-3"><a href="index.html" class="back-link text-violet-700"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Muestras</a><span class="font-extrabold">NUBE <span class="text-violet-600">CLIENTES</span></span><span class="w-8 h-8 rounded-full bg-violet-100 text-violet-700 grid place-items-center text-xs font-bold">DP</span></div></header>
+    <main class="max-w-6xl mx-auto px-5 py-8">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-3"><div><p class="text-xs uppercase tracking-widest text-violet-700 font-bold">Relación con clientes</p><h1 class="text-2xl sm:text-3xl font-extrabold mt-2">Seguimiento sencillo</h1><p class="text-sm text-slate-500 mt-2">Organiza contactos y recuerda qué paso sigue.</p></div><button id="addClient" class="w-full sm:w-auto rounded-lg bg-violet-700 text-white px-4 py-2.5 text-sm font-bold interactive-button"><i class="fa-solid fa-plus mr-2"></i>Añadir ejemplo</button></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mt-7"><article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5"><p class="text-xs text-slate-500">Clientes registrados</p><b class="text-2xl block mt-2">128</b></article><article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5"><p class="text-xs text-slate-500">Por contactar</p><b class="text-2xl block mt-2 text-amber-600">9</b></article><article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5 col-span-2 sm:col-span-1"><p class="text-xs text-slate-500">Nuevos este mes</p><b class="text-2xl block mt-2 text-emerald-600">24</b></article></div>
+        <section class="bg-white border rounded-xl mt-5 overflow-hidden"><div class="p-4 border-b flex flex-col sm:flex-row gap-3 justify-between"><h2 class="font-bold">Contactos recientes</h2><input id="search" type="search" placeholder="Buscar por nombre..." class="border rounded-lg px-3 py-2 text-sm sm:w-64"></div><div class="overflow-x-auto"><table class="w-full min-w-[620px] text-left text-sm"><thead class="bg-slate-50 text-xs text-slate-500"><tr><th class="p-4">Cliente</th><th>Último contacto</th><th>Interés</th><th>Próximo paso</th><th>Estado</th></tr></thead><tbody id="clients" class="divide-y"><tr><td class="p-4 font-semibold">Ana Mendoza</td><td>Hoy</td><td>Página para su tienda</td><td>Enviar propuesta</td><td><span class="text-amber-700 bg-amber-100 rounded-full px-2 py-1 text-xs">Pendiente</span></td></tr><tr><td class="p-4 font-semibold">Jorge Salvatierra</td><td>Ayer</td><td>Control de ventas</td><td>Reunión el jueves</td><td><span class="text-blue-700 bg-blue-100 rounded-full px-2 py-1 text-xs">En conversación</span></td></tr><tr><td class="p-4 font-semibold">Micaela Flores</td><td>12 ago</td><td>Catálogo digital</td><td>Preparar muestra</td><td><span class="text-emerald-700 bg-emerald-100 rounded-full px-2 py-1 text-xs">Activa</span></td></tr></tbody></table></div></section>
+        <p id="demoNote" class="text-xs text-slate-400 mt-4">La búsqueda y el botón solo modifican esta demostración en tu navegador. No hay datos reales.</p>
+    </main>
+    <script>
+        const search = document.getElementById("search"), rows = () => Array.from(document.querySelectorAll("#clients tr"));
+        search.addEventListener("input", () => rows().forEach(row => row.classList.toggle("hidden", !row.textContent.toLowerCase().includes(search.value.toLowerCase()))));
+        document.getElementById("addClient").addEventListener("click", () => {
+            const row = document.createElement("tr");
+            row.innerHTML = '<td class="p-4 font-semibold">Cliente de prueba</td><td>Ahora</td><td>Consulta de ejemplo</td><td>Contactar</td><td><span class="text-amber-700 bg-amber-100 rounded-full px-2 py-1 text-xs">Pendiente</span></td>';
+            document.getElementById("clients").prepend(row);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+    <title>Panel de ventas | Muestra de DIGITAL PANDA</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../ui.css">
+    <style>body{--lift-shadow:0 18px 36px -24px rgba(37,99,235,.2);background:#f4f7fb;color:#152238}.sidebar{background:#101c32}</style>
+</head>
+<body>
+    <div class="bg-slate-900 text-slate-200 text-center text-xs py-2">MUESTRA DE DISEÑO · Información ficticia · No está conectada a un negocio</div>
+    <div class="min-h-screen md:flex">
+        <aside class="sidebar text-white md:w-60 p-5"><div class="flex justify-between items-center md:block"><a href="index.html" class="back-link back-link-dark text-cyan-300"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Volver a muestras</a><span class="md:hidden text-xs text-slate-400">DEMO</span></div><p class="font-extrabold mt-6">PANDA <span class="text-cyan-300">COMERCIO</span></p><nav class="hidden md:block mt-10 space-y-2 text-sm"><a class="block rounded-lg bg-white/10 p-3" href="#"><i class="fa-solid fa-chart-pie mr-2 text-cyan-300"></i>Resumen</a><a class="block rounded-lg p-3 text-slate-300" href="#"><i class="fa-solid fa-bag-shopping mr-2"></i>Ventas</a><a class="block rounded-lg p-3 text-slate-300" href="#"><i class="fa-solid fa-box mr-2"></i>Productos</a></nav></aside>
+        <main class="flex-1 p-4 sm:p-5 md:p-9 max-w-7xl mx-auto min-w-0">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3"><div><p class="text-xs text-slate-500">Lunes, 17 de agosto</p><h1 class="text-2xl font-extrabold mt-1">Resumen de ventas</h1></div><button class="bg-white border rounded-lg px-4 py-2 text-sm">Esta semana <i class="fa-solid fa-chevron-down ml-2 text-xs"></i></button></div>
+            <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-7">
+                <article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5"><p class="text-xs text-slate-500">Ventas de hoy</p><p class="text-2xl font-extrabold mt-2">Bs 2.450</p><p class="text-xs text-emerald-600 mt-2"><i class="fa-solid fa-arrow-up"></i> 8% frente a ayer</p></article>
+                <article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5"><p class="text-xs text-slate-500">Pedidos recibidos</p><p class="text-2xl font-extrabold mt-2">38</p><p class="text-xs text-slate-400 mt-2">12 todavía por preparar</p></article>
+                <article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5"><p class="text-xs text-slate-500">Promedio por compra</p><p class="text-2xl font-extrabold mt-2">Bs 64,50</p><p class="text-xs text-slate-400 mt-2">En los últimos 7 días</p></article>
+                <article class="interactive-lift bg-white border rounded-xl p-4 sm:p-5"><p class="text-xs text-slate-500">Productos por reponer</p><p class="text-2xl font-extrabold mt-2">5</p><p class="text-xs text-amber-600 mt-2"><i class="fa-solid fa-circle-exclamation"></i> Revisar existencias</p></article>
+            </div>
+            <div class="grid lg:grid-cols-3 gap-4 mt-5">
+                <section class="bg-white border rounded-xl p-5 lg:col-span-2"><div class="flex justify-between"><div><h2 class="font-bold">Ventas durante la semana</h2><p class="text-xs text-slate-500 mt-1">Total de ejemplo: Bs 12.840</p></div><span class="text-emerald-600 text-xs font-bold">+12,4%</span></div><div class="h-48 mt-7 flex items-end justify-around gap-3 border-b border-slate-200"><div class="w-8 bg-sky-200 rounded-t h-[35%]"></div><div class="w-8 bg-sky-300 rounded-t h-[52%]"></div><div class="w-8 bg-sky-300 rounded-t h-[45%]"></div><div class="w-8 bg-sky-400 rounded-t h-[72%]"></div><div class="w-8 bg-sky-400 rounded-t h-[60%]"></div><div class="w-8 bg-sky-500 rounded-t h-[86%]"></div><div class="w-8 bg-blue-700 rounded-t h-[95%]"></div></div><div class="flex justify-around text-[10px] text-slate-500 mt-2"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div></section>
+                <section class="bg-white border rounded-xl p-5"><h2 class="font-bold">Más vendidos</h2><div class="space-y-4 mt-5 text-sm"><div class="flex justify-between"><span>Canasta familiar</span><b>24</b></div><div class="flex justify-between"><span>Miel de abeja</span><b>18</b></div><div class="flex justify-between"><span>Café molido</span><b>15</b></div><div class="flex justify-between"><span>Té de hierbas</span><b>12</b></div></div></section>
+            </div>
+            <section class="bg-white border rounded-xl p-5 mt-5 overflow-x-auto"><div class="flex justify-between items-center"><h2 class="font-bold">Últimos pedidos</h2><button class="text-xs text-blue-700 font-bold">Ver todos</button></div><table class="w-full min-w-[600px] text-left text-xs mt-4"><thead class="text-slate-500 border-b"><tr><th class="py-3">Pedido</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th></tr></thead><tbody class="divide-y"><tr><td class="py-3 font-semibold">#PD-2048</td><td>Lucía A.</td><td>Hoy, 10:42</td><td>Bs 128</td><td><span class="rounded-full bg-amber-100 text-amber-800 px-2 py-1">Preparando</span></td></tr><tr><td class="py-3 font-semibold">#PD-2047</td><td>Mario R.</td><td>Hoy, 10:18</td><td>Bs 76</td><td><span class="rounded-full bg-emerald-100 text-emerald-800 px-2 py-1">Entregado</span></td></tr><tr><td class="py-3 font-semibold">#PD-2046</td><td>Camila S.</td><td>Ayer, 18:35</td><td>Bs 210</td><td><span class="rounded-full bg-sky-100 text-sky-800 px-2 py-1">Nuevo</span></td></tr></tbody></table></section>
+            <p class="text-[10px] text-slate-400 mt-5">Todos los nombres, pedidos, montos y resultados de esta pantalla son inventados.</p>
+        </main>
+    </div>
+</body>
+</html>

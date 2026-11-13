@@ -1,0 +1,168 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isVerified() {
+      return request.auth != null
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+
+    // Todos los administradores viven en admins/{email}. El propietario es el
+    // documento con role == 'owner' y es el único que puede gestionar la lista.
+    function isAdmin() {
+      return isVerified()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    function isOwner() {
+      return isVerified()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+        && get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.role == 'owner';
+    }
+
+    function validCatalog() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['types', 'modules', 'durations'])
+        && data.keys().hasOnly(['types', 'modules', 'durations'])
+        && data.types is list && data.types.size() > 0 && data.types.size() <= 100
+        && data.modules is list && data.modules.size() <= 100
+        && data.durations is list && data.durations.size() > 0 && data.durations.size() <= 100;
+    }
+
+    function validNewOrder(orderId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'code', 'clientName', 'clientPhone', 'notes', 'customRequirements',
+          'projectType', 'projectTypeId', 'modules', 'days', 'discount',
+          'total', 'status', 'progress', 'siteName', 'siteLink',
+          'estimatedDate', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'code', 'clientName', 'clientPhone', 'notes', 'customRequirements',
+          'projectType', 'projectTypeId', 'modules', 'days', 'discount',
+          'total', 'status', 'progress', 'siteName', 'siteLink',
+          'estimatedDate', 'createdAt'
+        ])
+        && data.code == orderId
+        && data.code.matches('^DP-[A-Z0-9]{10}$')
+        && data.clientName is string && data.clientName.size() >= 2 && data.clientName.size() <= 100
+        && data.clientPhone is string && data.clientPhone.size() >= 7 && data.clientPhone.size() <= 30
+        && data.notes is string && data.notes.size() <= 1000
+        && data.customRequirements is string && data.customRequirements.size() <= 1000
+        && data.projectType is string && data.projectType.size() > 0 && data.projectType.size() <= 100
+        && data.projectTypeId is string && data.projectTypeId.size() > 0 && data.projectTypeId.size() <= 100
+        && data.modules is list && data.modules.size() <= 100
+        && data.days is number && data.days > 0 && data.days <= 3650
+        && data.discount is number && data.discount >= 0 && data.discount <= 80
+        && data.total is number && data.total >= 0 && data.total <= 1000000000
+        && data.status == 'pendiente'
+        && data.progress == 0
+        && data.siteLink == ''
+        && data.siteName is string && data.siteName.size() <= 100
+        && data.estimatedDate is string && data.estimatedDate.size() <= 100
+        && data.createdAt is timestamp;
+    }
+
+    function validNewTracking(code) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'code', 'projectName', 'progress', 'status',
+          'siteLink', 'estimatedDate', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'code', 'projectName', 'progress', 'status',
+          'siteLink', 'estimatedDate', 'updatedAt'
+        ])
+        && data.code == code
+        && data.code.matches('^DP-[A-Z0-9]{10}$')
+        && data.projectName is string && data.projectName.size() > 0 && data.projectName.size() <= 100
+        && data.progress == 0
+        && data.status == 'pendiente'
+        && data.siteLink == ''
+        && data.estimatedDate is string && data.estimatedDate.size() <= 100
+        && data.updatedAt is timestamp;
+    }
+
+    function validTrackingUpdate(code) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'code', 'projectName', 'progress', 'status',
+          'siteLink', 'estimatedDate', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'code', 'projectName', 'progress', 'status',
+          'siteLink', 'estimatedDate', 'updatedAt'
+        ])
+        && data.code == code
+        && data.code.matches('^DP-[A-Z0-9]{10}$')
+        && data.projectName is string && data.projectName.size() > 0 && data.projectName.size() <= 100
+        && data.progress is number && data.progress >= 0 && data.progress <= 100
+        && data.status in ['pendiente', 'en_proceso', 'entregado']
+        && data.siteLink is string && data.siteLink.size() <= 500
+        && data.estimatedDate is string && data.estimatedDate.size() <= 100
+        && data.updatedAt is timestamp
+        && (data.status != 'entregado' || data.progress == 100);
+    }
+
+    // Lista de administradores adicionales. Solo el propietario puede gestionarla.
+    match /admins/{email} {
+      allow get: if isOwner() || (isVerified() && email == request.auth.token.email);
+      allow list: if isOwner();
+      allow create: if isOwner()
+        && email == request.resource.data.email
+        && request.resource.data.keys().hasAll(['email', 'role', 'addedAt', 'addedBy'])
+        && request.resource.data.keys().hasOnly(['email', 'role', 'addedAt', 'addedBy'])
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.role == 'admin'
+        && request.resource.data.addedBy is string
+        && request.resource.data.addedBy.size() <= 254
+        && request.resource.data.addedAt is timestamp;
+      allow delete: if isOwner()
+        && resource.data.role == 'admin'
+        && email != request.auth.token.email;
+      allow update: if false;
+    }
+
+    match /settings/catalog {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if isAdmin() && validCatalog();
+      allow delete: if isAdmin();
+    }
+
+    // The public tracker contains only information safe to show to the customer.
+    match /tracking/{code} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if validNewTracking(code);
+      allow update: if isAdmin() && validTrackingUpdate(code);
+      allow delete: if isAdmin();
+    }
+
+    // Customer and contact details can only be read by the administrator.
+    match /orders/{orderId} {
+      allow create: if validNewOrder(orderId);
+      allow get, list, delete: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'progress', 'siteLink', 'discount', 'total'])
+        && request.resource.data.status in ['pendiente', 'en_proceso', 'entregado']
+        && request.resource.data.progress is number
+        && request.resource.data.progress >= 0
+        && request.resource.data.progress <= 100
+        && request.resource.data.siteLink is string
+        && request.resource.data.siteLink.size() <= 500
+        && request.resource.data.discount is number
+        && request.resource.data.discount >= 0
+        && request.resource.data.discount <= 80
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.total <= 1000000000
+        && (request.resource.data.status != 'entregado' || request.resource.data.progress == 100);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

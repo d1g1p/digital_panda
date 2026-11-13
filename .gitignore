@@ -1,0 +1,14 @@
+# Local environment files
+.env
+.env.*
+lol.txt
+
+# Generated website output and local dependencies
+dist/
+node_modules/
+
+# Local Firebase tooling and private service credentials
+.firebase/
+firebase-debug.log
+*-service-account*.json
+service-account*.json

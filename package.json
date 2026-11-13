@@ -1,0 +1,17 @@
+{
+  "name": "digital-panda",
+  "private": true,
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "check": "node scripts/check-site.cjs",
+    "check:prod": "npm run build && node scripts/check-site.cjs --prod",
+    "firebase:login": "node scripts/firebase.cjs login",
+    "firebase:logout": "node scripts/firebase.cjs logout",
+    "deploy:rules": "node scripts/firebase.cjs deploy --only firestore:rules",
+    "deploy:hosting": "node scripts/check-deploy-config.cjs && npm run check && npm run build && node scripts/firebase.cjs deploy --only hosting"
+  }
+}

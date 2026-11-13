@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Administración | DIGITAL PANDA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./ui.css">
+    <script>
+        tailwind.config = { theme: { extend: {
+            fontFamily: { sans: ['Manrope', 'sans-serif'] },
+            colors: { navy: { 950: '#060c1a', 900: '#0a142f', 800: '#132247', 700: '#1d3263', 600: '#1d4ed8', 500: '#2563eb', 400: '#3b82f6', accent: '#38bdf8' } }
+        } } };
+    </script>
+</head>
+<body class="font-sans min-h-screen antialiased">
+    <div id="toast" role="status" aria-live="polite" aria-atomic="true" class="fixed bottom-5 right-5 z-50 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-navy-900 border border-navy-500/40 text-white px-5 py-3.5 rounded-xl shadow-2xl">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-cyan-400 text-xl"></i><span id="toastMsg" class="font-medium text-sm"></span>
+    </div>
+    <header class="site-header sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-navy-700 flex items-center justify-center text-xl">🐼</div><div><p class="font-black tracking-wide">DIGITAL<span class="text-cyan-400">PANDA</span></p><p class="text-[10px] text-slate-500 uppercase tracking-widest">Administración</p></div></div>
+            <div class="flex gap-2">
+                <a href="index.html" class="back-link back-link-dark text-slate-200"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Ver sitio</a>
+                <button id="signOutButton" class="hidden px-3 py-2 rounded-lg border border-navy-700 text-xs text-slate-300 hover:bg-navy-800"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Salir</button>
+            </div>
+        </div>
+    </header>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <section id="loginPanel" class="max-w-lg mx-auto glass-card rounded-2xl p-7 sm:p-10 text-center mt-8 interactive-lift">
+            <div class="w-14 h-14 rounded-2xl bg-navy-600/20 text-cyan-300 flex items-center justify-center text-2xl mx-auto"><i class="fa-solid fa-lock"></i></div>
+            <h1 class="text-2xl font-bold mt-5">Panel de administración</h1>
+            <p id="loginMessage" class="text-sm text-slate-400 mt-3">Solo los correos autorizados pueden entrar. Solicita tu enlace de acceso.</p>
+            <label for="adminLoginEmail" class="block text-left text-[11px] uppercase tracking-widest text-slate-400 font-bold mt-6">Tu correo autorizado</label>
+            <input id="adminLoginEmail" type="email" autocomplete="email" inputmode="email" placeholder="tu@correo.com" class="block w-full mt-2 bg-navy-950/80 border border-navy-700 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600">
+            <button id="sendLoginLink" type="button" class="mt-4 w-full px-5 py-3 rounded-xl gradient-blue-bg text-white font-bold text-sm cursor-pointer"><i class="fa-solid fa-envelope mr-2"></i><span id="sendLoginLinkLabel">Enviar enlace de acceso</span></button>
+            <p class="text-[11px] text-slate-600 mt-5">El propietario puede añadir o quitar administradores desde la pestaña Administradores. Primera vez: crea en Firestore el documento <span class="font-mono">admins/tu-correo</span> con <span class="font-mono">role: owner</span>.</p>
+        </section>
+
+        <section id="dashboard" class="hidden space-y-7">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
+                <div><p class="text-xs uppercase tracking-widest text-cyan-300 font-bold">Panel privado</p><h1 class="text-3xl font-black mt-1">Tu negocio, de un vistazo</h1><p id="adminEmail" class="text-xs text-slate-500 mt-2"></p></div>
+                <button id="refreshOrders" class="px-4 py-2.5 rounded-lg border border-navy-700 text-xs text-slate-300 hover:bg-navy-800"><i class="fa-solid fa-rotate mr-1"></i>Actualizar pedidos</button>
+            </div>
+
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+                <article class="glass-card rounded-xl p-4 sm:p-5 interactive-lift"><p class="text-xs text-slate-400">Todos los pedidos</p><p id="statAll" class="text-3xl font-black mt-2">0</p></article>
+                <article class="glass-card rounded-xl p-4 sm:p-5 interactive-lift"><p class="text-xs text-amber-300">Pendientes</p><p id="statPending" class="text-3xl font-black mt-2">0</p></article>
+                <article class="glass-card rounded-xl p-4 sm:p-5 interactive-lift"><p class="text-xs text-cyan-300">En proceso</p><p id="statProgress" class="text-3xl font-black mt-2">0</p></article>
+                <article class="glass-card rounded-xl p-4 sm:p-5 interactive-lift"><p class="text-xs text-emerald-300">Entregados</p><p id="statDelivered" class="text-3xl font-black mt-2">0</p></article>
+            </div>
+
+            <div class="flex gap-1 sm:gap-2 border-b border-navy-800 overflow-x-auto">
+                <button data-tab="orders" class="tab-button whitespace-nowrap px-3 sm:px-4 py-3 text-sm font-semibold border-b-2 border-cyan-400 text-white">Pedidos</button>
+                <button data-tab="catalog" class="tab-button whitespace-nowrap px-3 sm:px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400">Precios y opciones</button>
+                <button id="adminsTabButton" data-tab="admins" class="tab-button hidden whitespace-nowrap px-3 sm:px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400">Administradores</button>
+            </div>
+
+            <section id="ordersSection" class="space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div><h2 class="text-xl font-bold">Pedidos y cotizaciones</h2><p id="orderCounts" class="text-xs text-slate-500 mt-1">Los clientes verán el avance que guardes aquí.</p></div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input id="orderSearch" type="search" aria-label="Buscar pedidos" placeholder="Buscar código, cliente, teléfono o requerimiento" class="bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500">
+                        <label class="text-xs text-slate-400">Mostrar
+                            <select id="orderFilter" class="ml-2 bg-navy-900 border border-navy-700 rounded-lg px-3 py-2 text-xs text-white">
+                                <option value="todos">Todos</option><option value="pendiente">Pendientes</option><option value="en_proceso">En proceso</option><option value="entregado">Entregados</option>
+                            </select>
+                        </label>
+                        <button id="exportOrders" class="px-3 py-2 rounded-lg border border-navy-700 text-xs text-slate-300 hover:bg-navy-800"><i class="fa-solid fa-file-csv mr-1"></i>Exportar CSV</button>
+                    </div>
+                </div>
+                <div id="ordersList" class="space-y-3"></div>
+            </section>
+
+            <section id="catalogSection" class="hidden space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div><h2 class="text-xl font-bold">Precios y opciones</h2><p class="text-xs text-slate-500 mt-1">Los cambios se reflejan en el cotizador público después de guardarlos.</p></div>
+                    <button id="saveCatalog" class="px-4 py-2.5 rounded-lg gradient-blue-bg text-xs text-white font-bold"><i class="fa-solid fa-floppy-disk mr-1"></i>Guardar cambios</button>
+                </div>
+                <div class="glass-card rounded-xl p-4 sm:p-5"><div class="flex justify-between items-center gap-3 mb-3"><div><h3 class="font-bold text-cyan-300">Tipos de proyecto</h3><p class="text-[11px] text-slate-500 mt-1">Páginas y sistemas que ofreces.</p></div><button data-add="types" class="text-xs text-cyan-300 hover:underline"><i class="fa-solid fa-plus mr-1"></i>Añadir</button></div><div id="typesEditor" class="grid lg:grid-cols-2 gap-3"></div></div>
+                <div class="glass-card rounded-xl p-4 sm:p-5"><div class="flex justify-between items-center gap-3 mb-3"><div><h3 class="font-bold text-cyan-300">Complementos</h3><p class="text-[11px] text-slate-500 mt-1">Opciones que el cliente puede añadir a su cotización.</p></div><button data-add="modules" class="text-xs text-cyan-300 hover:underline"><i class="fa-solid fa-plus mr-1"></i>Añadir</button></div><div id="modulesEditor" class="grid lg:grid-cols-2 gap-3"></div></div>
+                <div class="glass-card rounded-xl p-4 sm:p-5"><div class="flex justify-between items-center gap-3 mb-3"><div><h3 class="font-bold text-cyan-300">Plazos y descuentos</h3><p class="text-[11px] text-slate-500 mt-1">Un plazo mayor puede ofrecer un descuento más alto. También puedes ajustar el total de cada pedido desde Pedidos.</p></div><button id="addDuration" class="text-xs text-cyan-300 hover:underline"><i class="fa-solid fa-plus mr-1"></i>Añadir plazo</button></div><div id="durationsEditor" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div></div>
+            </section>
+
+            <section id="adminsSection" class="hidden space-y-5">
+                <div><h2 class="text-xl font-bold">Administradores</h2><p class="text-xs text-slate-500 mt-1">Solo el propietario puede añadir o quitar correos con acceso al panel.</p></div>
+                <div class="glass-card rounded-xl p-4 sm:p-5">
+                    <label for="newAdminEmail" class="block text-[11px] uppercase tracking-widest text-slate-400 font-bold">Añadir administrador por correo</label>
+                    <div class="flex flex-col sm:flex-row gap-2 mt-2">
+                        <input id="newAdminEmail" type="email" autocomplete="email" inputmode="email" placeholder="nuevo@correo.com" class="flex-1 bg-navy-950/80 border border-navy-700 rounded-lg px-3 py-2.5 text-xs text-white placeholder:text-slate-600">
+                        <button id="addAdminButton" type="button" class="px-4 py-2.5 rounded-lg gradient-blue-bg text-xs font-bold text-white"><i class="fa-solid fa-user-plus mr-1"></i>Añadir acceso</button>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">Ese correo podrá entrar con enlace de Firebase Authentication. El propietario siempre conserva el acceso.</p>
+                </div>
+                <div id="adminsList" class="space-y-2"></div>
+            </section>
+
+            <p class="text-[11px] text-slate-600">Los datos se guardan en Firebase Firestore. Revisa las reglas antes de publicar.</p>
+        </section>
+    </main>
+    <script type="module" src="./admin.js"></script>
+</body>
+</html>
