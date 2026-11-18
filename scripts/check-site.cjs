@@ -80,6 +80,8 @@ const env = readEnv(path.join(root, ".env"));
 const rulesPath = path.join(root, "firebase.rules");
 if (!fs.existsSync(rulesPath)) {
     errors.push("Falta firebase.rules.");
+} else if (fs.readFileSync(rulesPath, "utf8").includes("REEMPLAZAR_CORREO_DUENO")) {
+    errors.push("Reemplaza REEMPLAZAR_CORREO_DUENO en firebase.rules por el correo del propietario.");
 }
 
 if (env.BUSINESS_WHATSAPP && !env.BUSINESS_WHATSAPP.includes("XXXXXXXXX") && !/^\d{8,15}$/.test(env.BUSINESS_WHATSAPP)) {

@@ -10,5 +10,13 @@ node_modules/
 # Local Firebase tooling and private service credentials
 .firebase/
 firebase-debug.log
+npm-debug.log*
+*.log
 *-service-account*.json
 service-account*.json
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

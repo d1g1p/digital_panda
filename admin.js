@@ -2,9 +2,9 @@ import { firebaseConfig, CATALOG_DEFAULTS } from "./firebase-config.js";
 import { escapeHtml, money, safeHttpUrl, setBusy, showToast, statusLabel } from "./shared.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, deleteDoc, doc, getDoc, getDocs, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, limit, query, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const ADMIN_EMAIL_STORAGE_KEY = "digitalPandaAdminEmail";
+const ADMIN_LOGIN_STORAGE_KEY = "digitalPandaAdminLogin";
 const configured = firebaseConfig.apiKey !== "REEMPLAZAR_API_KEY"
     && firebaseConfig.authDomain !== "REEMPLAZAR_AUTH_DOMAIN"
     && firebaseConfig.projectId !== "REEMPLAZAR_PROJECT_ID"
@@ -12,12 +12,10 @@ const configured = firebaseConfig.apiKey !== "REEMPLAZAR_API_KEY"
 let auth = null;
 let db = null;
 let currentAdmin = null;
-let isOwner = false;
 let pendingSignInLink = false;
 let accessDeniedEmail = "";
 let catalog = JSON.parse(JSON.stringify(CATALOG_DEFAULTS));
 let allOrders = [];
-let admins = [];
 let orderSearch = "";
 let savingCatalog = false;
 
@@ -29,7 +27,7 @@ function isValidEmail(email) {
 
 function readStoredAdminEmail() {
     try {
-        return window.localStorage.getItem(ADMIN_EMAIL_STORAGE_KEY) || "";
+        return window.localStorage.getItem(ADMIN_LOGIN_STORAGE_KEY) || "";
     } catch (error) {
         console.error(error);
         return "";
@@ -38,7 +36,7 @@ function readStoredAdminEmail() {
 
 function storeAdminEmail(email) {
     try {
-        window.localStorage.setItem(ADMIN_EMAIL_STORAGE_KEY, email);
+        window.localStorage.setItem(ADMIN_LOGIN_STORAGE_KEY, email);
     } catch (error) {
         console.error(error);
     }
@@ -46,26 +44,22 @@ function storeAdminEmail(email) {
 
 function clearStoredAdminEmail() {
     try {
-        window.localStorage.removeItem(ADMIN_EMAIL_STORAGE_KEY);
+        window.localStorage.removeItem(ADMIN_LOGIN_STORAGE_KEY);
     } catch (error) {
         console.error(error);
     }
 }
 
-async function checkAdminAccess(user) {
-    if (!user || !user.email || !db) return null;
-    const email = user.email.toLowerCase();
+// La autorización vive en firebase.rules: solo el correo del propietario puede
+// leer pedidos. Si Firestore permite una lectura mínima, la sesión es válida.
+async function verifyAdminAccess() {
+    if (!db) return false;
     try {
-        const snapshot = await getDoc(doc(db, "admins", email));
-        if (!snapshot.exists()) return null;
-        const data = snapshot.data() || {};
-        return {
-            ...data,
-            email: String(data.email || email).toLowerCase()
-        };
+        await getDocs(query(collection(db, "orders"), limit(1)));
+        return true;
     } catch (error) {
         console.error(error);
-        return null;
+        return false;
     }
 }
 
@@ -74,10 +68,8 @@ function showAccessState() {
     byId("loginPanel").classList.toggle("hidden", authorized);
     byId("dashboard").classList.toggle("hidden", !authorized);
     byId("signOutButton").classList.toggle("hidden", !authorized);
-    byId("adminsTabButton").classList.toggle("hidden", !authorized || !isOwner);
-    if (!authorized || !isOwner) byId("adminsSection").classList.add("hidden");
     byId("adminEmail").textContent = authorized
-        ? "Sesión iniciada como " + currentAdmin.email + (isOwner ? " · Propietario" : " · Administrador")
+        ? "Sesión iniciada como " + currentAdmin.email
         : "";
     if (!configured) {
         byId("loginMessage").textContent = "Completa la configuración de Firebase en firebase-config.js. Sigue FIREBASE_SETUP.md.";
@@ -91,7 +83,7 @@ function showAccessState() {
     byId("sendLoginLink").classList.remove("opacity-50", "cursor-not-allowed");
     byId("sendLoginLinkLabel").textContent = pendingSignInLink ? "Completar acceso" : "Enviar enlace de acceso";
     if (accessDeniedEmail) {
-        byId("loginMessage").textContent = "El correo " + accessDeniedEmail + " no está autorizado. Pide a un administrador que te añada a la lista.";
+        byId("loginMessage").textContent = "El correo " + accessDeniedEmail + " no tiene acceso a este panel.";
     } else if (pendingSignInLink) {
         byId("loginMessage").textContent = "Confirma tu correo para completar el acceso.";
     } else {
@@ -147,8 +139,8 @@ async function sendLoginLink() {
 }
 
 function activateTab(name) {
-    if (name === "admins" && !isOwner) name = "orders";
-    const sections = { orders: "ordersSection", catalog: "catalogSection", admins: "adminsSection" };
+    const sections = { orders: "ordersSection", catalog: "catalogSection" };
+    if (!sections[name]) name = "orders";
     Object.entries(sections).forEach(([key, id]) => byId(id).classList.toggle("hidden", key !== name));
     document.querySelectorAll(".tab-button").forEach(button => {
         const active = button.dataset.tab === name;
@@ -366,105 +358,6 @@ function exportOrders() {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function formatAdminDate(value) {
-    const date = value && typeof value.toDate === "function" ? value.toDate() : null;
-    if (!date || Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("es-BO", { day:"2-digit", month:"short", year:"numeric" }).format(date);
-}
-
-function renderAdmins() {
-    const sorted = [...admins].sort((a, b) => {
-        if (a.role === "owner" && b.role !== "owner") return -1;
-        if (b.role === "owner" && a.role !== "owner") return 1;
-        return String(a.email || "").localeCompare(String(b.email || ""));
-    });
-    const rows = sorted.map(item => {
-        const email = String(item.email || item.id || "").toLowerCase();
-        const owner = item.role === "owner";
-        const added = formatAdminDate(item.addedAt);
-        const detail = owner
-            ? "Propietario · acceso permanente"
-            : (added ? "Añadido el " + added : "Administrador");
-        return '<article class="rounded-xl border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ' + (owner ? 'border-cyan-400/20 bg-cyan-400/5' : 'border-navy-800 bg-navy-950/60') + '">' +
-            '<div class="min-w-0"><p class="font-mono text-xs break-all ' + (owner ? 'text-cyan-200' : 'text-slate-200') + '">' + escapeHtml(email) + '</p><p class="text-[11px] text-slate-500 mt-1">' + escapeHtml(detail) + '</p></div>' +
-            (owner
-                ? '<span class="text-[10px] uppercase tracking-widest text-cyan-300 font-bold">Propietario</span>'
-                : '<button type="button" data-remove-admin="' + escapeHtml(item.id || email) + '" class="text-xs font-bold text-rose-300 hover:text-rose-200"><i class="fa-solid fa-user-minus mr-1"></i>Quitar acceso</button>') +
-            '</article>';
-    });
-    if (!rows.length) {
-        rows.push('<p class="text-sm text-amber-300">No hay administradores configurados. Crea el documento del propietario en Firestore para habilitar el panel.</p>');
-    }
-    byId("adminsList").innerHTML = rows.join("");
-}
-
-async function loadAdmins() {
-    if (!isOwner || !db) return;
-    try {
-        const snapshot = await getDocs(collection(db, "admins"));
-        admins = snapshot.docs
-            .map(item => ({ id:item.id, ...item.data() }))
-            .sort((a, b) => String(a.email || "").localeCompare(String(b.email || "")));
-        renderAdmins();
-    } catch (error) {
-        console.error(error);
-        byId("adminsList").innerHTML = '<p class="text-sm text-rose-300">No se pudieron cargar los administradores.</p>';
-    }
-}
-
-async function addAdmin() {
-    if (!isOwner || !db || !currentAdmin) return showToast("Solo el propietario puede añadir administradores.", false);
-    const input = byId("newAdminEmail");
-    const email = input.value.trim().toLowerCase();
-    if (!isValidEmail(email)) {
-        showToast("Escribe un correo válido.", false);
-        input.focus();
-        return;
-    }
-    const button = byId("addAdminButton");
-    if (button.disabled) return;
-    setBusy(button, true);
-    try {
-        const adminRef = doc(db, "admins", email);
-        const snapshot = await getDoc(adminRef);
-        if (snapshot.exists()) {
-            showToast("Ese correo ya es administrador.", false);
-            return;
-        }
-        await setDoc(adminRef, {
-            email:email,
-            role:"admin",
-            addedAt:serverTimestamp(),
-            addedBy:(currentAdmin.email || "").toLowerCase()
-        });
-        input.value = "";
-        showToast("Administrador añadido.");
-        await loadAdmins();
-    } catch (error) {
-        console.error(error);
-        showToast("No se pudo añadir el administrador.", false);
-    } finally {
-        setBusy(button, false);
-    }
-}
-
-async function removeAdmin(email) {
-    if (!isOwner || !db) return showToast("Solo el propietario puede quitar administradores.", false);
-    const normalized = String(email || "").trim().toLowerCase();
-    if (!normalized) return;
-    const target = admins.find(item => String(item.id || item.email || "").toLowerCase() === normalized);
-    if (target && target.role === "owner") return showToast("No puedes quitar el acceso del propietario.", false);
-    if (!window.confirm("¿Quitar el acceso de " + normalized + "?")) return;
-    try {
-        await deleteDoc(doc(db, "admins", normalized));
-        showToast("Acceso de administrador quitado.");
-        await loadAdmins();
-    } catch (error) {
-        console.error(error);
-        showToast("No se pudo quitar el administrador.", false);
-    }
-}
-
 function addCatalogItem(kind) {
     const id = (kind === "types" ? "tipo-" : "complemento-") + Date.now();
     catalog[kind].push({
@@ -483,10 +376,6 @@ async function initialize() {
     byId("adminLoginEmail").addEventListener("keydown", event => {
         if (event.key === "Enter") sendLoginLink();
     });
-    byId("addAdminButton").addEventListener("click", addAdmin);
-    byId("newAdminEmail").addEventListener("keydown", event => {
-        if (event.key === "Enter") addAdmin();
-    });
     byId("saveCatalog").addEventListener("click", saveCatalog);
     byId("refreshOrders").addEventListener("click", loadOrders);
     byId("orderFilter").addEventListener("change", renderOrders);
@@ -502,8 +391,6 @@ async function initialize() {
     byId("signOutButton").addEventListener("click", async () => {
         if (auth) await signOut(auth);
         currentAdmin = null;
-        isOwner = false;
-        admins = [];
         accessDeniedEmail = "";
         showAccessState();
         showToast("Sesión cerrada.");
@@ -524,7 +411,6 @@ async function initialize() {
         const remove = event.target.closest("[data-remove-kind]");
         const removeDuration = event.target.closest("[data-remove-duration]");
         const save = event.target.closest("[data-save-order]");
-        const removeAdminButton = event.target.closest("[data-remove-admin]");
         if (remove) {
             catalog[remove.dataset.removeKind] = catalog[remove.dataset.removeKind].filter(item => item.id !== remove.dataset.removeId);
             renderCatalog();
@@ -534,7 +420,6 @@ async function initialize() {
             renderCatalog();
         }
         if (save) saveOrderUpdate(save.dataset.saveOrder);
-        if (removeAdminButton) removeAdmin(removeAdminButton.dataset.removeAdmin);
     });
 
     if (!configured) {
@@ -547,28 +432,25 @@ async function initialize() {
         auth = getAuth(app);
         db = getFirestore(app);
         onAuthStateChanged(auth, async user => {
-            const access = user ? await checkAdminAccess(user) : null;
-            if (access) {
-                currentAdmin = user;
-                isOwner = access.role === "owner";
-                accessDeniedEmail = "";
+            if (user && user.email) {
+                if (await verifyAdminAccess()) {
+                    currentAdmin = user;
+                    accessDeniedEmail = "";
+                    showAccessState();
+                    renderCatalog();
+                    await Promise.all([loadCatalog(), loadOrders()]);
+                    return;
+                }
+                accessDeniedEmail = user.email;
+                currentAdmin = null;
                 showAccessState();
-                renderCatalog();
-                if (!isOwner) activateTab("orders");
-                await Promise.all([loadCatalog(), loadOrders(), isOwner ? loadAdmins() : Promise.resolve()]);
+                showToast("Ese correo no tiene acceso a este panel.", false);
+                await signOut(auth);
                 return;
             }
             currentAdmin = null;
-            isOwner = false;
-            admins = [];
-            if (user) {
-                accessDeniedEmail = user.email || "";
-                showAccessState();
-                showToast("Ese correo no está autorizado como administrador.", false);
-                await signOut(auth);
-            } else {
-                showAccessState();
-            }
+            accessDeniedEmail = "";
+            showAccessState();
         });
         if (isSignInWithEmailLink(auth, window.location.href)) {
             pendingSignInLink = true;

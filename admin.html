@@ -37,7 +37,7 @@
             <label for="adminLoginEmail" class="block text-left text-[11px] uppercase tracking-widest text-slate-400 font-bold mt-6">Tu correo autorizado</label>
             <input id="adminLoginEmail" type="email" autocomplete="email" inputmode="email" placeholder="tu@correo.com" class="block w-full mt-2 bg-navy-950/80 border border-navy-700 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600">
             <button id="sendLoginLink" type="button" class="mt-4 w-full px-5 py-3 rounded-xl gradient-blue-bg text-white font-bold text-sm cursor-pointer"><i class="fa-solid fa-envelope mr-2"></i><span id="sendLoginLinkLabel">Enviar enlace de acceso</span></button>
-            <p class="text-[11px] text-slate-600 mt-5">El propietario puede añadir o quitar administradores desde la pestaña Administradores. Primera vez: crea en Firestore el documento <span class="font-mono">admins/tu-correo</span> con <span class="font-mono">role: owner</span>.</p>
+            <p class="text-[11px] text-slate-600 mt-5">El acceso se autoriza en las reglas de Firebase para un solo correo. No compartas tu enlace de acceso.</p>
         </section>
 
         <section id="dashboard" class="hidden space-y-7">
@@ -56,7 +56,6 @@
             <div class="flex gap-1 sm:gap-2 border-b border-navy-800 overflow-x-auto">
                 <button data-tab="orders" class="tab-button whitespace-nowrap px-3 sm:px-4 py-3 text-sm font-semibold border-b-2 border-cyan-400 text-white">Pedidos</button>
                 <button data-tab="catalog" class="tab-button whitespace-nowrap px-3 sm:px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400">Precios y opciones</button>
-                <button id="adminsTabButton" data-tab="admins" class="tab-button hidden whitespace-nowrap px-3 sm:px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400">Administradores</button>
             </div>
 
             <section id="ordersSection" class="space-y-4">
@@ -83,19 +82,6 @@
                 <div class="glass-card rounded-xl p-4 sm:p-5"><div class="flex justify-between items-center gap-3 mb-3"><div><h3 class="font-bold text-cyan-300">Tipos de proyecto</h3><p class="text-[11px] text-slate-500 mt-1">Páginas y sistemas que ofreces.</p></div><button data-add="types" class="text-xs text-cyan-300 hover:underline"><i class="fa-solid fa-plus mr-1"></i>Añadir</button></div><div id="typesEditor" class="grid lg:grid-cols-2 gap-3"></div></div>
                 <div class="glass-card rounded-xl p-4 sm:p-5"><div class="flex justify-between items-center gap-3 mb-3"><div><h3 class="font-bold text-cyan-300">Complementos</h3><p class="text-[11px] text-slate-500 mt-1">Opciones que el cliente puede añadir a su cotización.</p></div><button data-add="modules" class="text-xs text-cyan-300 hover:underline"><i class="fa-solid fa-plus mr-1"></i>Añadir</button></div><div id="modulesEditor" class="grid lg:grid-cols-2 gap-3"></div></div>
                 <div class="glass-card rounded-xl p-4 sm:p-5"><div class="flex justify-between items-center gap-3 mb-3"><div><h3 class="font-bold text-cyan-300">Plazos y descuentos</h3><p class="text-[11px] text-slate-500 mt-1">Un plazo mayor puede ofrecer un descuento más alto. También puedes ajustar el total de cada pedido desde Pedidos.</p></div><button id="addDuration" class="text-xs text-cyan-300 hover:underline"><i class="fa-solid fa-plus mr-1"></i>Añadir plazo</button></div><div id="durationsEditor" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div></div>
-            </section>
-
-            <section id="adminsSection" class="hidden space-y-5">
-                <div><h2 class="text-xl font-bold">Administradores</h2><p class="text-xs text-slate-500 mt-1">Solo el propietario puede añadir o quitar correos con acceso al panel.</p></div>
-                <div class="glass-card rounded-xl p-4 sm:p-5">
-                    <label for="newAdminEmail" class="block text-[11px] uppercase tracking-widest text-slate-400 font-bold">Añadir administrador por correo</label>
-                    <div class="flex flex-col sm:flex-row gap-2 mt-2">
-                        <input id="newAdminEmail" type="email" autocomplete="email" inputmode="email" placeholder="nuevo@correo.com" class="flex-1 bg-navy-950/80 border border-navy-700 rounded-lg px-3 py-2.5 text-xs text-white placeholder:text-slate-600">
-                        <button id="addAdminButton" type="button" class="px-4 py-2.5 rounded-lg gradient-blue-bg text-xs font-bold text-white"><i class="fa-solid fa-user-plus mr-1"></i>Añadir acceso</button>
-                    </div>
-                    <p class="text-[11px] text-slate-500 mt-2">Ese correo podrá entrar con enlace de Firebase Authentication. El propietario siempre conserva el acceso.</p>
-                </div>
-                <div id="adminsList" class="space-y-2"></div>
             </section>
 
             <p class="text-[11px] text-slate-600">Los datos se guardan en Firebase Firestore. Revisa las reglas antes de publicar.</p>

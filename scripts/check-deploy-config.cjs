@@ -25,6 +25,10 @@ if (env.BUSINESS_WHATSAPP && !env.BUSINESS_WHATSAPP.includes("XXXXXXXXX") && !/^
 for (const field of ["SOCIAL_FACEBOOK", "SOCIAL_INSTAGRAM", "SOCIAL_TIKTOK"]) {
     if (env[field] && !/^https?:\/\//i.test(env[field])) missing.push(field + " (URL http/https)");
 }
+const rulesPath = path.resolve(__dirname, "..", "firebase.rules");
+if (fs.existsSync(rulesPath) && fs.readFileSync(rulesPath, "utf8").includes("REEMPLAZAR_CORREO_DUENO")) {
+    missing.push("correo del propietario en firebase.rules");
+}
 const aliasPath = path.resolve(__dirname, "..", ".firebaserc");
 if (fs.existsSync(aliasPath) && env.FIREBASE_PROJECT_ID) {
     const alias = JSON.parse(fs.readFileSync(aliasPath, "utf8"));

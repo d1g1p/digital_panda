@@ -24,10 +24,10 @@ Static Spanish-language site for DIGITAL PANDA: landing + quote calculator, publ
 ## Architecture
 
 - `index.html` + `public.js`: quote calculator, checkout via a single Firestore batch writing `orders/{code}` and `tracking/{code}`, then WhatsApp handoff and code-based public tracker.
-- `admin.html` + `admin.js`: passwordless email-link auth; `admins/{email}` is the allowlist. The doc with `role: "owner"` can add/remove `role: "admin"` docs. Edits `settings/catalog`, lists `orders`, updates order status/progress/site link/discount/total and mirrors status into `tracking`.
+- `admin.html` + `admin.js`: passwordless Firebase email-link auth for a single owner. Authorization is enforced by `firebase.rules`, which compares the verified token email to `REEMPLAZAR_CORREO_DUENO`; there is no `admins` collection or admin-management UI. Edits `settings/catalog`, lists `orders`, updates order status/progress/site link/discount/total and mirrors status into `tracking`.
 - `firebase-config.js`: shared Firebase config, WhatsApp number, social URLs, and `CATALOG_DEFAULTS` fallback prices.
 - `shared.js`: shared escaping, money formatting, toast, busy-state, status-label, and URL-validation helpers.
-- `firebase.rules`: authoritative Firestore security. Orders are admin-only; `tracking/{code}` allows public `get` but denies `list`; `settings/catalog` allows public `get` and admin writes; `admins/{email}` is owner-managed. Order updates are limited to `status`, `progress`, `siteLink`, `discount`, and `total`.
+- `firebase.rules`: authoritative Firestore security. Orders are owner-only; `tracking/{code}` allows public `get` but denies `list`; `settings/catalog` allows public `get` and owner writes. Order updates are limited to `status`, `progress`, `siteLink`, `discount`, and `total`.
 - `ui.css` is shared by all pages; `motion.js` handles `data-reveal` scroll animations.
 - `muestras/` contains static demo pages copied to `dist/muestras/`; `404.html` and `robots.txt` are also published.
 

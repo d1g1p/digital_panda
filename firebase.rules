@@ -7,17 +7,10 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
-    // Todos los administradores viven en admins/{email}. El propietario es el
-    // documento con role == 'owner' y es el único que puede gestionar la lista.
+    // Un solo propietario autorizado. La sesión la crea Firebase Authentication
+    // con enlace de correo; las reglas comprueban el correo verificado del token.
     function isAdmin() {
-      return isVerified()
-        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
-    }
-
-    function isOwner() {
-      return isVerified()
-        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
-        && get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.role == 'owner';
+      return isVerified() && request.auth.token.email == 'd1g1panda5724@gmail.com';
     }
 
     function validCatalog() {
@@ -102,26 +95,6 @@ service cloud.firestore {
         && data.estimatedDate is string && data.estimatedDate.size() <= 100
         && data.updatedAt is timestamp
         && (data.status != 'entregado' || data.progress == 100);
-    }
-
-    // Lista de administradores adicionales. Solo el propietario puede gestionarla.
-    match /admins/{email} {
-      allow get: if isOwner() || (isVerified() && email == request.auth.token.email);
-      allow list: if isOwner();
-      allow create: if isOwner()
-        && email == request.resource.data.email
-        && request.resource.data.keys().hasAll(['email', 'role', 'addedAt', 'addedBy'])
-        && request.resource.data.keys().hasOnly(['email', 'role', 'addedAt', 'addedBy'])
-        && request.resource.data.email is string
-        && request.resource.data.email.size() <= 254
-        && request.resource.data.role == 'admin'
-        && request.resource.data.addedBy is string
-        && request.resource.data.addedBy.size() <= 254
-        && request.resource.data.addedAt is timestamp;
-      allow delete: if isOwner()
-        && resource.data.role == 'admin'
-        && email != request.auth.token.email;
-      allow update: if false;
     }
 
     match /settings/catalog {
