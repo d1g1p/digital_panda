@@ -80,8 +80,14 @@ const env = readEnv(path.join(root, ".env"));
 const rulesPath = path.join(root, "firebase.rules");
 if (!fs.existsSync(rulesPath)) {
     errors.push("Falta firebase.rules.");
-} else if (fs.readFileSync(rulesPath, "utf8").includes("REEMPLAZAR_CORREO_DUENO")) {
-    errors.push("Reemplaza REEMPLAZAR_CORREO_DUENO en firebase.rules por el correo del propietario.");
+} else {
+    const rules = fs.readFileSync(rulesPath, "utf8");
+    if (!rules.includes("request.auth.token.role")) {
+        errors.push("firebase.rules debe autorizar por custom claim role.");
+    }
+    if (/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(rules)) {
+        errors.push("firebase.rules no debe contener correos; usa custom claims.");
+    }
 }
 
 if (env.BUSINESS_WHATSAPP && !env.BUSINESS_WHATSAPP.includes("XXXXXXXXX") && !/^\d{8,15}$/.test(env.BUSINESS_WHATSAPP)) {

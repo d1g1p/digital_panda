@@ -1,7 +1,7 @@
 import { firebaseConfig, CATALOG_DEFAULTS } from "./firebase-config.js";
 import { escapeHtml, money, safeHttpUrl, setBusy, showToast, statusLabel } from "./shared.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, getDocs, limit, query, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ADMIN_LOGIN_STORAGE_KEY = "digitalPandaAdminLogin";
@@ -12,7 +12,6 @@ const configured = firebaseConfig.apiKey !== "REEMPLAZAR_API_KEY"
 let auth = null;
 let db = null;
 let currentAdmin = null;
-let pendingSignInLink = false;
 let accessDeniedEmail = "";
 let catalog = JSON.parse(JSON.stringify(CATALOG_DEFAULTS));
 let allOrders = [];
@@ -37,14 +36,6 @@ function readStoredAdminEmail() {
 function storeAdminEmail(email) {
     try {
         window.localStorage.setItem(ADMIN_LOGIN_STORAGE_KEY, email);
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-function clearStoredAdminEmail() {
-    try {
-        window.localStorage.removeItem(ADMIN_LOGIN_STORAGE_KEY);
     } catch (error) {
         console.error(error);
     }
@@ -75,32 +66,39 @@ function showAccessState() {
         byId("loginMessage").textContent = "Completa la configuración de Firebase en firebase-config.js. Sigue FIREBASE_SETUP.md.";
         byId("sendLoginLink").disabled = true;
         byId("adminLoginEmail").disabled = true;
+        byId("adminLoginPassword").disabled = true;
         byId("sendLoginLink").classList.add("opacity-50", "cursor-not-allowed");
         return;
     }
     byId("sendLoginLink").disabled = false;
     byId("adminLoginEmail").disabled = false;
+    byId("adminLoginPassword").disabled = false;
     byId("sendLoginLink").classList.remove("opacity-50", "cursor-not-allowed");
-    byId("sendLoginLinkLabel").textContent = pendingSignInLink ? "Completar acceso" : "Enviar enlace de acceso";
+    byId("sendLoginLinkLabel").textContent = "Entrar";
     if (accessDeniedEmail) {
         byId("loginMessage").textContent = "El correo " + accessDeniedEmail + " no tiene acceso a este panel.";
-    } else if (pendingSignInLink) {
-        byId("loginMessage").textContent = "Confirma tu correo para completar el acceso.";
     } else {
-        byId("loginMessage").textContent = "Solo los correos autorizados pueden entrar. Solicita tu enlace de acceso.";
+        byId("loginMessage").textContent = "Usa el correo y la contraseña creados en Firebase Authentication.";
     }
 }
 
-async function sendLoginLink() {
+async function signIn() {
     if (!auth || !configured) {
         showToast("Configura Firebase antes de iniciar sesión.", false);
         return;
     }
-    const input = byId("adminLoginEmail");
-    const email = input.value.trim().toLowerCase();
+    const emailInput = byId("adminLoginEmail");
+    const passwordInput = byId("adminLoginPassword");
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
     if (!isValidEmail(email)) {
         showToast("Escribe un correo válido.", false);
-        input.focus();
+        emailInput.focus();
+        return;
+    }
+    if (!password) {
+        showToast("Escribe tu contraseña.", false);
+        passwordInput.focus();
         return;
     }
     const button = byId("sendLoginLink");
@@ -108,31 +106,16 @@ async function sendLoginLink() {
     accessDeniedEmail = "";
     setBusy(button, true);
     try {
-        if (pendingSignInLink) {
-            await signInWithEmailLink(auth, email, window.location.href);
-            pendingSignInLink = false;
-            clearStoredAdminEmail();
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showToast("Acceso verificado.");
-        } else {
-            await sendSignInLinkToEmail(auth, email, {
-                url: window.location.origin + window.location.pathname,
-                handleCodeInApp: true
-            });
-            storeAdminEmail(email);
-            showToast("Enviamos el enlace a " + email + ".");
-        }
+        await signInWithEmailAndPassword(auth, email, password);
+        storeAdminEmail(email);
+        passwordInput.value = "";
+        showToast("Sesión iniciada.");
     } catch (error) {
         console.error(error);
-        if (pendingSignInLink) {
-            pendingSignInLink = false;
-            clearStoredAdminEmail();
-            byId("sendLoginLinkLabel").textContent = "Enviar enlace de acceso";
-            byId("loginMessage").textContent = "El enlace no es válido o venció. Solicita uno nuevo.";
-            showToast("El enlace no es válido o venció. Solicita uno nuevo.", false);
-        } else {
-            showToast("No se pudo enviar el enlace. Revisa el método de acceso por correo en Firebase.", false);
-        }
+        const message = error && error.code === "auth/invalid-credential"
+            ? "Correo o contraseña incorrectos."
+            : "No se pudo iniciar sesión. Revisa tus credenciales de Firebase.";
+        showToast(message, false);
     } finally {
         if (configured) setBusy(button, false);
     }
@@ -372,9 +355,12 @@ function addCatalogItem(kind) {
 async function initialize() {
     document.querySelectorAll(".tab-button").forEach(button => button.addEventListener("click", () => activateTab(button.dataset.tab)));
     document.querySelectorAll("[data-add]").forEach(button => button.addEventListener("click", () => addCatalogItem(button.dataset.add)));
-    byId("sendLoginLink").addEventListener("click", sendLoginLink);
+    byId("sendLoginLink").addEventListener("click", signIn);
     byId("adminLoginEmail").addEventListener("keydown", event => {
-        if (event.key === "Enter") sendLoginLink();
+        if (event.key === "Enter") byId("adminLoginPassword").focus();
+    });
+    byId("adminLoginPassword").addEventListener("keydown", event => {
+        if (event.key === "Enter") signIn();
     });
     byId("saveCatalog").addEventListener("click", saveCatalog);
     byId("refreshOrders").addEventListener("click", loadOrders);
@@ -452,25 +438,14 @@ async function initialize() {
             accessDeniedEmail = "";
             showAccessState();
         });
-        if (isSignInWithEmailLink(auth, window.location.href)) {
-            pendingSignInLink = true;
-            const storedEmail = readStoredAdminEmail();
-            showAccessState();
-            if (storedEmail && isValidEmail(storedEmail)) {
-                byId("adminLoginEmail").value = storedEmail;
-                await sendLoginLink();
-            } else {
-                byId("adminLoginEmail").focus();
-            }
-        } else {
-            byId("adminLoginEmail").value = readStoredAdminEmail();
-            showAccessState();
-        }
+        byId("adminLoginEmail").value = readStoredAdminEmail();
+        showAccessState();
     } catch (error) {
         console.error(error);
         byId("loginMessage").textContent = "No se pudo iniciar Firebase. Revisa la configuración del proyecto.";
         byId("sendLoginLink").disabled = true;
         byId("adminLoginEmail").disabled = true;
+        byId("adminLoginPassword").disabled = true;
     }
 }
 

@@ -26,8 +26,11 @@ for (const field of ["SOCIAL_FACEBOOK", "SOCIAL_INSTAGRAM", "SOCIAL_TIKTOK"]) {
     if (env[field] && !/^https?:\/\//i.test(env[field])) missing.push(field + " (URL http/https)");
 }
 const rulesPath = path.resolve(__dirname, "..", "firebase.rules");
-if (fs.existsSync(rulesPath) && fs.readFileSync(rulesPath, "utf8").includes("REEMPLAZAR_CORREO_DUENO")) {
-    missing.push("correo del propietario en firebase.rules");
+if (!fs.existsSync(rulesPath) || !fs.readFileSync(rulesPath, "utf8").includes("request.auth.token.role")) {
+    missing.push("firebase.rules debe autorizar por custom claim role");
+}
+if (fs.existsSync(rulesPath) && /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(fs.readFileSync(rulesPath, "utf8"))) {
+    missing.push("firebase.rules no debe contener correos");
 }
 const aliasPath = path.resolve(__dirname, "..", ".firebaserc");
 if (fs.existsSync(aliasPath) && env.FIREBASE_PROJECT_ID) {

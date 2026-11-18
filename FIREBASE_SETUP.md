@@ -4,11 +4,11 @@ La página ya guarda cotizaciones, clientes y pedidos en Firestore. Antes de pub
 
 1. Crea un proyecto en Firebase y registra una aplicación web.
 2. Completa `.env` con los datos de configuración Firebase Web. `BUSINESS_WHATSAPP` debe ser tu número con código de país, solo dígitos y sin `+`; el enlace se forma como `https://wa.me/<número>`. Opcionalmente completa `SOCIAL_FACEBOOK`, `SOCIAL_INSTAGRAM` y `SOCIAL_TIKTOK` con las URLs completas.
-3. En Firebase Authentication, activa Correo electrónico/contraseña y el método Enlace de correo electrónico (acceso sin contraseña). Añade el dominio donde publicarás la página a los dominios autorizados.
-4. Reemplaza `REEMPLAZAR_CORREO_DUENO` en `firebase.rules` por el correo del propietario, en minúsculas. Solo ese correo verificado podrá leer pedidos y guardar cambios; no hay lista de administradores ni colección `admins`.
+3. En Firebase Authentication, activa Correo electrónico/contraseña. Crea los usuarios que usarán el panel y añade el dominio donde publicarás la página a los dominios autorizados.
+4. Asigna a esos usuarios un custom claim `role` con valor `owner` o `admin` desde el SDK de administración o la API de Identity Platform. `firebase.rules` autoriza solo a quienes tienen uno de esos roles; ningún correo aparece en el código ni en las reglas. Para cambiar el acceso, actualiza el claim y vuelve a iniciar sesión para refrescar el token.
 5. Crea la base de datos Firestore y publica `firebase.rules` desde la pestaña Reglas o con `npm run deploy:rules` después de iniciar sesión con `npm run firebase:login`.
 6. Genera el sitio con `npm run build`. Instala Firebase CLI con `npm install --global firebase-tools`, inicia sesión con `npm run firebase:login` y publica Hosting con `npm run deploy:hosting`. La cuenta de la CLI necesita los roles Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer y Service Usage Consumer en el proyecto ([roles de Firebase](https://firebase.google.com/docs/projects/iam/roles-predefined-product)); el rol Owner también funciona. La configuración publica solo `dist/` e incorpora al `firebase-config.js` generado la configuración web, el número de WhatsApp y las URLs de redes sociales. No publiques `.env` ni subas credenciales privadas al repositorio.
-7. Abre el sitio en el dominio autorizado. Entra en Admin, escribe el correo del propietario y solicita el enlace de Firebase Authentication. Guarda los precios iniciales desde el panel. Para dar acceso a otra persona, cambia el correo en `firebase.rules` y vuelve a publicar las reglas.
+7. Abre el sitio en el dominio autorizado. Entra en Admin con el correo y la contraseña del usuario de Firebase. Guarda los precios iniciales desde el panel. Para dar acceso a otra persona, crea su usuario en Firebase y asígnale el claim `role`.
 
 ## Qué valores son públicos
 

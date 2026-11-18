@@ -1,16 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isVerified() {
-      return request.auth != null
-        && request.auth.token.email is string
-        && request.auth.token.email_verified == true;
-    }
-
-    // Un solo propietario autorizado. La sesión la crea Firebase Authentication
-    // con enlace de correo; las reglas comprueban el correo verificado del token.
+    // La autorización sale de un custom claim de Firebase Authentication.
+    // Ningún correo queda escrito en el código ni en estas reglas.
     function isAdmin() {
-      return isVerified() && request.auth.token.email == 'd1g1panda5724@gmail.com';
+      return request.auth != null
+        && request.auth.token.role in ['owner', 'admin'];
     }
 
     function validCatalog() {
